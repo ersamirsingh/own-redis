@@ -25,6 +25,8 @@ class CommandContext:
     session_user: Optional[str] = None
     aof: Optional[Any] = None
     snapshot: Optional[Any] = None
+    metrics: Optional[Any] = None
+    tracer: Optional[Any] = None
 
 
 @dataclass

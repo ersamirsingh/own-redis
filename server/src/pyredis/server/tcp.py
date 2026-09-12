@@ -2,14 +2,18 @@
 
 import asyncio
 import logging
-from typing import Dict, Optional, Tuple
+import time
+from typing import Any, Dict, Optional, Tuple
 from pyredis.commands.registry import CommandContext, CommandRegistry, registry as default_registry
 from pyredis.core.exceptions import CommandError, ProtocolError, PyRedisException
+from pyredis.events import Event, EventBus, EventType, event_bus as default_event_bus
+from pyredis.metrics import MetricsCollector, metrics_collector as default_metrics
 from pyredis.protocol.encoder import RespEncoder
 from pyredis.protocol.parser import RespParser
 from pyredis.protocol.types import SimpleString
 from pyredis.server.client import ClientConnection
 from pyredis.storage.store import DataStore
+from pyredis.tracing import Tracer, tracer as default_tracer
 
 logger = logging.getLogger("pyredis.server")
 
@@ -25,6 +29,9 @@ class TcpServer:
         command_registry: Optional[CommandRegistry] = None,
         aof: Optional[Any] = None,
         snapshot: Optional[Any] = None,
+        metrics: Optional[MetricsCollector] = None,
+        tracer: Optional[Tracer] = None,
+        bus: Optional[EventBus] = None,
     ) -> None:
         self.host: str = host
         self.port: int = port
@@ -34,6 +41,9 @@ class TcpServer:
         )
         self.aof = aof
         self.snapshot = snapshot
+        self.metrics: MetricsCollector = metrics if metrics is not None else default_metrics
+        self.tracer: Tracer = tracer if tracer is not None else default_tracer
+        self.bus: EventBus = bus if bus is not None else default_event_bus
         self._server: Optional[asyncio.Server] = None
         self._clients: Dict[str, ClientConnection] = {}
         self._running: bool = False
@@ -125,6 +135,15 @@ class TcpServer:
                         client.touch()
                         continue
 
+                    # Initialize distributed trace
+                    trace = self.tracer.start_trace(
+                        raw_cmd,
+                        raw_args,
+                        client_id=client.id,
+                        client_ip=client.peer,
+                    )
+                    cmd_start_time = time.monotonic()
+
                     # Prepare execution context
                     context = CommandContext(
                         store=self.store,
@@ -133,26 +152,72 @@ class TcpServer:
                         authenticated=client.authenticated,
                         aof=self.aof,
                         snapshot=self.snapshot,
+                        metrics=self.metrics,
+                        tracer=self.tracer,
                     )
 
-                    # Execute command
+                    # Execute command with stage spans
+                    status = "OK"
+                    err_msg = None
                     try:
-                        result = self.registry.execute(raw_cmd, raw_args, context)
+                        with self.tracer.span(trace, "storage"):
+                            result = self.registry.execute(raw_cmd, raw_args, context)
                         response_bytes = RespEncoder.encode(result)
 
-                        # If command succeeded and is mutating, append to AOF
-                        if self.aof:
-                            cmd_def = self.registry.get_definition(raw_cmd)
-                            if cmd_def and cmd_def.is_mutation:
-                                self.aof.append(raw_cmd, raw_args)
+                        # If mutating, append to AOF and publish domain event
+                        cmd_def = self.registry.get_definition(raw_cmd)
+                        first_key = raw_args[0].decode("utf-8", errors="ignore") if raw_args else None
+
+                        if cmd_def and cmd_def.is_mutation:
+                            if self.aof:
+                                with self.tracer.span(trace, "aof"):
+                                    self.aof.append(raw_cmd, raw_args)
+
+                            # Emit domain event
+                            ev_type = EventType.KEY_DELETED if raw_cmd == "DEL" else EventType.KEY_UPDATED
+                            self.bus.publish(Event(
+                                type=ev_type,
+                                key=first_key,
+                                actor=f"client:{client.id}",
+                                metadata={"command": raw_cmd},
+                            ))
+
                     except PyRedisException as err:
+                        status = "ERROR"
+                        err_msg = str(err)
                         response_bytes = RespEncoder.encode(err)
                     except Exception as err:
+                        status = "ERROR"
+                        err_msg = str(err)
                         logger.exception(f"Unexpected error executing {raw_cmd}")
                         response_bytes = RespEncoder.encode_error(f"ERR {err}")
 
-                    writer.write(response_bytes)
-                    await writer.drain()
+                    # Network response write span
+                    with self.tracer.span(trace, "network_write"):
+                        writer.write(response_bytes)
+                        await writer.drain()
+
+                    # Finalize telemetry
+                    duration_ms = (time.monotonic() - cmd_start_time) * 1000.0
+                    trace.finish(status=status, error_message=err_msg)
+                    self.tracer.record_trace(trace)
+
+                    first_key = raw_args[0].decode("utf-8", errors="ignore") if raw_args else None
+                    self.metrics.record_command(
+                        raw_cmd,
+                        duration_ms,
+                        key=first_key,
+                        args=trace.sanitized_args,
+                        client_peer=client.peer,
+                    )
+
+                    if duration_ms >= self.metrics.slow_threshold_ms:
+                        self.bus.publish(Event(
+                            type=EventType.SLOW_COMMAND,
+                            key=first_key,
+                            metadata={"command": raw_cmd, "duration_ms": duration_ms},
+                        ))
+
                     client.touch()
 
         except (ConnectionResetError, asyncio.IncompleteReadError):
