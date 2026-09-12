@@ -22,6 +22,7 @@ import pyredis.commands.lock  # noqa: F401
 import pyredis.commands.ratelimit  # noqa: F401
 import pyredis.commands.json_doc  # noqa: F401
 import pyredis.commands.history  # noqa: F401
+import pyredis.commands.memory  # noqa: F401
 
 __all__ = [
     "registry",

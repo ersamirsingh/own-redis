@@ -5,6 +5,7 @@ from typing import AsyncIterator, Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pyredis.api.routes import (
+    ai_router,
     auth_router,
     commands_router,
     keys_router,
@@ -82,6 +83,7 @@ def create_app(
     app.include_router(locks_router, prefix="/api")
     app.include_router(commands_router, prefix="/api")
     app.include_router(telemetry_router, prefix="/api")
+    app.include_router(ai_router, prefix="/api")
     app.include_router(websocket_router)
 
     return app
