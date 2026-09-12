@@ -3,6 +3,7 @@
 import httpx
 import pytest
 from pyredis.api.app import create_app
+from pyredis.auth.models import UserCreate
 from pyredis.auth.repository import user_repo
 from pyredis.core.types import Role
 from pyredis.storage.store import DataStore
@@ -38,7 +39,7 @@ async def test_health_check(client: httpx.AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_auth_signup_and_me(client: httpx.AsyncClient) -> None:
-    # 1. Signup first user -> Admin
+    # 1. Signup user -> defaults to DEVELOPER
     signup_res = await client.post("/api/auth/signup", json={
         "email": "samir@example.com",
         "name": "Samir",
@@ -47,13 +48,14 @@ async def test_auth_signup_and_me(client: httpx.AsyncClient) -> None:
     assert signup_res.status_code == 201
     data = signup_res.json()
     assert "access_token" in data
-    assert data["user"]["role"] == "admin"
+    assert data["user"]["role"] == "developer"
     token = data["access_token"]
 
     # 2. Get /me
     me_res = await client.get("/api/auth/me", headers={"Authorization": f"Bearer {token}"})
     assert me_res.status_code == 200
     assert me_res.json()["email"] == "samir@example.com"
+    assert me_res.json()["role"] == "developer"
 
     # 3. Unauthenticated /me must fail
     unauth_res = await client.get("/api/auth/me")
@@ -62,53 +64,68 @@ async def test_auth_signup_and_me(client: httpx.AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_keys_crud_and_rbac(client: httpx.AsyncClient) -> None:
-    # 1. Signup Admin
-    admin_signup = await client.post("/api/auth/signup", json={
+    # 1. Seed initial Admin manually
+    user_repo.create_user(
+        UserCreate(email="admin_keys@example.com", name="Admin", password="password123"),
+        force_role=Role.ADMIN,
+    )
+    admin_login = await client.post("/api/auth/login", json={
         "email": "admin_keys@example.com",
-        "name": "Admin",
         "password": "password123",
     })
-    admin_token = admin_signup.json()["access_token"]
+    assert admin_login.status_code == 200
+    admin_token = admin_login.json()["access_token"]
     admin_headers = {"Authorization": f"Bearer {admin_token}"}
 
-    # 2. Signup ReadOnly user
-    ro_signup = await client.post("/api/auth/signup", json={
-        "email": "ro_user@example.com",
-        "name": "ReadOnlyUser",
+    # 2. Signup Developer user
+    dev_signup = await client.post("/api/auth/signup", json={
+        "email": "dev_user@example.com",
+        "name": "DeveloperUser",
         "password": "password123",
-        "role": "readonly",
     })
-    ro_token = ro_signup.json()["access_token"]
-    ro_headers = {"Authorization": f"Bearer {ro_token}"}
+    assert dev_signup.status_code == 201
+    assert dev_signup.json()["user"]["role"] == "developer"
+    dev_id = dev_signup.json()["user"]["id"]
+    dev_token = dev_signup.json()["access_token"]
+    dev_headers = {"Authorization": f"Bearer {dev_token}"}
 
-    # 3. Admin creates String key
+    # 3. Developer can create and read String key
     create_res = await client.post("/api/keys", json={
         "key": "app:version",
         "type": "string",
         "value": "1.0.0",
         "ttl_seconds": 3600,
-    }, headers=admin_headers)
+    }, headers=dev_headers)
     assert create_res.status_code == 201
 
-    # 4. ReadOnly user can read key
-    get_res = await client.get("/api/keys/app:version", headers=ro_headers)
+    get_res = await client.get("/api/keys/app:version", headers=dev_headers)
     assert get_res.status_code == 200
     assert get_res.json()["value"] == "1.0.0"
 
-    # 5. ReadOnly user is blocked (403) from creating or deleting keys
-    ro_create = await client.post("/api/keys", json={
-        "key": "hack",
-        "type": "string",
-        "value": "bad",
-    }, headers=ro_headers)
-    assert ro_create.status_code == 403
+    # 4. Developer is blocked (403) from Admin-only endpoints
+    snap_res = await client.post("/api/persistence/snapshot", headers=dev_headers)
+    assert snap_res.status_code == 403
 
-    ro_del = await client.delete("/api/keys/app:version", headers=ro_headers)
-    assert ro_del.status_code == 403
+    # 5. Admin promotes Developer to Admin
+    promote_res = await client.patch(f"/api/users/{dev_id}/role", json={
+        "role": "admin",
+    }, headers=admin_headers)
+    assert promote_res.status_code == 200
+    assert promote_res.json()["role"] == "admin"
 
-    # 6. Admin can delete key
+    # 6. Promoted user logs in and can now access Admin endpoint
+    promoted_login = await client.post("/api/auth/login", json={
+        "email": "dev_user@example.com",
+        "password": "password123",
+    })
+    new_admin_headers = {"Authorization": f"Bearer {promoted_login.json()['access_token']}"}
+    snap_promoted = await client.post("/api/persistence/snapshot", headers=new_admin_headers)
+    assert snap_promoted.status_code == 200
+
+    # 7. Delete key
     admin_del = await client.delete("/api/keys/app:version", headers=admin_headers)
     assert admin_del.status_code == 204
+
 
 
 @pytest.mark.asyncio

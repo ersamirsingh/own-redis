@@ -142,7 +142,7 @@ def json_set_cmd(args: List[Union[bytes, str]], context: CommandContext) -> str:
     return "OK"
 
 
-@command("JSON.GET", min_args=1, max_args=2, role=Role.READONLY, complexity="O(N)", is_mutation=False, description="Get JSON document or sub-tree at path: JSON.GET key [path]")
+@command("JSON.GET", min_args=1, max_args=2, role=Role.DEVELOPER, complexity="O(N)", is_mutation=False, description="Get JSON document or sub-tree at path: JSON.GET key [path]")
 def json_get_cmd(args: List[Union[bytes, str]], context: CommandContext) -> Optional[str]:
     key = _to_str(args[0])
     path = _to_str(args[1]) if len(args) > 1 else "."
@@ -193,7 +193,7 @@ def json_del_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     return 0
 
 
-@command("JSON.TYPE", min_args=1, max_args=2, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Report type of JSON element at path")
+@command("JSON.TYPE", min_args=1, max_args=2, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Report type of JSON element at path")
 def json_type_cmd(args: List[Union[bytes, str]], context: CommandContext) -> Optional[str]:
     key = _to_str(args[0])
     path = _to_str(args[1]) if len(args) > 1 else "."

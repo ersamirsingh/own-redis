@@ -16,9 +16,7 @@ class DataType(str, Enum):
 class Role(str, Enum):
     """Role hierarchy for Multi-User RBAC."""
     ADMIN = "admin"
-    OPERATOR = "operator"
     DEVELOPER = "developer"
-    READONLY = "readonly"
 
 
 class FsyncPolicy(str, Enum):

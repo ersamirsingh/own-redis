@@ -6,12 +6,9 @@ from pyredis.core.exceptions import AuthError, CommandError, WrongTypeError
 from pyredis.core.types import Role
 from pyredis.storage.store import DataStore
 
-# Hierarchy levels for RBAC: higher number = greater privilege
 ROLE_HIERARCHY: Dict[Role, int] = {
-    Role.READONLY: 1,
-    Role.DEVELOPER: 2,
-    Role.OPERATOR: 3,
-    Role.ADMIN: 4,
+    Role.DEVELOPER: 1,
+    Role.ADMIN: 2,
 }
 
 

@@ -17,7 +17,7 @@ class UserCreate(BaseModel):
     email: str
     name: str
     password: str = Field(min_length=6)
-    role: Optional[Role] = None  # If not specified, first user becomes ADMIN, others DEVELOPER
+    role: Optional[Role] = None  # If not specified, defaults to DEVELOPER
 
 
 class UserLogin(BaseModel):

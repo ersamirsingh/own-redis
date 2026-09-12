@@ -48,7 +48,7 @@ def zadd_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     return added
 
 
-@command("ZRANGE", min_args=3, max_args=4, role=Role.READONLY, complexity="O(log(N)+M)", is_mutation=False, description="Return a range of members in a sorted set, by index")
+@command("ZRANGE", min_args=3, max_args=4, role=Role.DEVELOPER, complexity="O(log(N)+M)", is_mutation=False, description="Return a range of members in a sorted set, by index")
 def zrange_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[bytes]:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.ZSET)
@@ -76,7 +76,7 @@ def zrange_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[b
     return result
 
 
-@command("ZRANK", min_args=2, max_args=2, role=Role.READONLY, complexity="O(log(N))", is_mutation=False, description="Determine the index of a member in a sorted set")
+@command("ZRANK", min_args=2, max_args=2, role=Role.DEVELOPER, complexity="O(log(N))", is_mutation=False, description="Determine the index of a member in a sorted set")
 def zrank_cmd(args: List[Union[bytes, str]], context: CommandContext) -> Optional[int]:
     key = _to_str(args[0])
     member = _to_str(args[1])
@@ -113,7 +113,7 @@ def zrem_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     return removed
 
 
-@command("ZSCORE", min_args=2, max_args=2, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Get the score associated with the given member in a sorted set")
+@command("ZSCORE", min_args=2, max_args=2, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Get the score associated with the given member in a sorted set")
 def zscore_cmd(args: List[Union[bytes, str]], context: CommandContext) -> Optional[bytes]:
     key = _to_str(args[0])
     member = _to_str(args[1])
@@ -128,7 +128,7 @@ def zscore_cmd(args: List[Union[bytes, str]], context: CommandContext) -> Option
     return str(score).encode("utf-8")
 
 
-@command("ZCARD", min_args=1, max_args=1, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Get the number of members in a sorted set")
+@command("ZCARD", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Get the number of members in a sorted set")
 def zcard_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.ZSET)

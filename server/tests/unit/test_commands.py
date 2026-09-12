@@ -94,23 +94,26 @@ class TestZSetCommands:
 
 
 class TestRBACAndValidation:
-    def test_readonly_user_blocked_on_mutations(self) -> None:
+    def test_developer_and_admin_rbac(self) -> None:
         store = DataStore()
-        readonly_ctx = CommandContext(store=store, role=Role.READONLY)
+        dev_ctx = CommandContext(store=store, role=Role.DEVELOPER)
+        admin_ctx = CommandContext(store=store, role=Role.ADMIN)
 
-        # Reads should succeed
-        assert registry.execute("PING", [], readonly_ctx) == SimpleString("PONG")
-        assert registry.execute("DBSIZE", [], readonly_ctx) == 0
+        # Developer can read and mutate keys
+        assert registry.execute("PING", [], dev_ctx) == SimpleString("PONG")
+        assert registry.execute("SET", ["k", "v"], dev_ctx) == SimpleString("OK")
+        assert registry.execute("GET", ["k"], dev_ctx) == b"v"
+        assert registry.execute("DEL", ["k"], dev_ctx) == 1
 
-        # Mutations should be blocked by RBAC
+        # Developer is blocked from Admin commands
         with pytest.raises(AuthError):
-            registry.execute("SET", ["k", "v"], readonly_ctx)
+            registry.execute("FLUSHDB", [], dev_ctx)
 
         with pytest.raises(AuthError):
-            registry.execute("DEL", ["k"], readonly_ctx)
+            registry.execute("SAVE", [], dev_ctx)
 
-        with pytest.raises(AuthError):
-            registry.execute("LPUSH", ["list", "val"], readonly_ctx)
+        # Admin can execute FLUSHDB
+        assert registry.execute("FLUSHDB", [], admin_ctx) == SimpleString("OK")
 
     def test_arity_validation(self, ctx: CommandContext) -> None:
         with pytest.raises(CommandError):

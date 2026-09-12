@@ -28,9 +28,9 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 async def signup(data: UserCreate) -> TokenResponse:
-    """Register a new user account. First user automatically becomes Admin."""
+    """Register a new user account (defaults to developer role)."""
     try:
-        user = user_repo.create_user(data)
+        user = await user_repo.create_user_async(data)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -60,7 +60,7 @@ async def login(data: UserLogin) -> TokenResponse:
         audit_logger.log(
             actor_id="anonymous",
             actor_email=data.email,
-            actor_role=Role.READONLY,
+            actor_role=Role.DEVELOPER,
             action="AUTH_LOGIN_FAILED",
             outcome="FAILURE",
         )
@@ -123,11 +123,11 @@ async def create_api_key(
     current_user: Annotated[UserResponse, Depends(get_current_user)],
 ) -> ApiKeyResponse:
     """Create a scoped personal API key for programmatic access."""
-    # User cannot create an API key with higher role privileges than their own
-    if current_user.role == Role.READONLY and data.role != Role.READONLY:
-        data.role = Role.READONLY
+    # Only Admin can create an Admin-scoped API key
+    if current_user.role != Role.ADMIN and data.role == Role.ADMIN:
+        data.role = Role.DEVELOPER
 
-    api_key = user_repo.create_api_key(
+    api_key = await user_repo.create_api_key_async(
         user_id=current_user.id,
         name=data.name,
         role=data.role,
@@ -161,7 +161,7 @@ async def revoke_api_key(
     current_user: Annotated[UserResponse, Depends(get_current_user)],
 ) -> None:
     """Revoke a personal API key."""
-    success = user_repo.revoke_api_key(key_id, current_user.id)
+    success = await user_repo.revoke_api_key_async(key_id, current_user.id)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="API key not found")
 
@@ -173,3 +173,4 @@ async def revoke_api_key(
         target=key_id,
         outcome="SUCCESS",
     )
+

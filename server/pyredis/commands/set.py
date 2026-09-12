@@ -46,7 +46,7 @@ def srem_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     return removed
 
 
-@command("SISMEMBER", min_args=2, max_args=2, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Determine if a given value is a member of a set")
+@command("SISMEMBER", min_args=2, max_args=2, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Determine if a given value is a member of a set")
 def sismember_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.SET)
@@ -58,7 +58,7 @@ def sismember_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int
     return 1 if raw in s else 0
 
 
-@command("SMEMBERS", min_args=1, max_args=1, role=Role.READONLY, complexity="O(N)", is_mutation=False, description="Get all the members in a set")
+@command("SMEMBERS", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(N)", is_mutation=False, description="Get all the members in a set")
 def smembers_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[bytes]:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.SET)
@@ -67,7 +67,7 @@ def smembers_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List
     return list(obj.value)
 
 
-@command("SCARD", min_args=1, max_args=1, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Get the number of members in a set")
+@command("SCARD", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Get the number of members in a set")
 def scard_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.SET)

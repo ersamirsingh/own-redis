@@ -1,4 +1,22 @@
 services:
+  pyredis-postgres:
+    image: postgres:16-alpine
+    container_name: pyredis-postgres
+    environment:
+      POSTGRES_DB: pyredis
+      POSTGRES_USER: pyredis
+      POSTGRES_PASSWORD: pyredis_secure_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pyredis-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pyredis -d pyredis"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   pyredis-engine:
     build:
       context: ./server
@@ -7,10 +25,15 @@ services:
     ports:
       - "6379:6379"
       - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://pyredis:pyredis_secure_password@pyredis-postgres:5432/pyredis
     env_file:
       - ./server/.env
     volumes:
       - pyredis-data:/app/data
+    depends_on:
+      pyredis-postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   pyredis-dashboard:
@@ -28,4 +51,6 @@ services:
 
 volumes:
   pyredis-data:
+    driver: local
+  pyredis-pgdata:
     driver: local

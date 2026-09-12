@@ -46,11 +46,11 @@ export default function SignupPage() {
           </p>
         </div>
 
-        {/* First user alert */}
-        <div className="p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-xs text-purple-300 flex items-start gap-2.5">
-          <ShieldCheck className="h-4 w-4 text-purple-400 shrink-0 mt-0.5" />
+        {/* Developer access notice */}
+        <div className="p-3.5 rounded-xl bg-neutral-900 border border-neutral-800 text-xs text-neutral-300 flex items-start gap-2.5">
+          <ShieldCheck className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
           <div>
-            <span className="font-semibold text-purple-200">First-User Bootstrap:</span> The first account registered on this PyRedis instance automatically receives the <span className="font-bold text-white">ADMIN</span> role with full root access.
+            <span className="font-semibold text-white">Developer Access:</span> New registrations receive the <span className="font-bold text-emerald-400">DEVELOPER</span> role. Administrators can promote accounts to Admin via Settings.
           </div>
         </div>
 

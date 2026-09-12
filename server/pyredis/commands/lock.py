@@ -43,7 +43,7 @@ def lock_extend_cmd(args: List[Union[bytes, str]], context: CommandContext) -> i
     return 1 if extended else 0
 
 
-@command("LOCK.INFO", min_args=1, max_args=1, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Get metadata and remaining TTL for active lock")
+@command("LOCK.INFO", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Get metadata and remaining TTL for active lock")
 def lock_info_cmd(args: List[Union[bytes, str]], context: CommandContext) -> Any:
     key = _to_str(args[0])
     info = lock_manager.info(key)

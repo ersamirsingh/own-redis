@@ -1,6 +1,6 @@
 """RESP2 Protocol Encoder."""
 
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, Union
 from pyredis.protocol.types import (
     Array,
     BulkString,

@@ -24,7 +24,7 @@ def memory_add_cmd(args: List[Union[bytes, str]], context: CommandContext) -> st
     return "OK"
 
 
-@command("MEMORY.SEARCH", min_args=1, max_args=3, role=Role.READONLY, complexity="O(N*D)", is_mutation=False, description="Search semantic memory by cosine vector similarity: MEMORY.SEARCH query [top_k] [min_score]")
+@command("MEMORY.SEARCH", min_args=1, max_args=3, role=Role.DEVELOPER, complexity="O(N*D)", is_mutation=False, description="Search semantic memory by cosine vector similarity: MEMORY.SEARCH query [top_k] [min_score]")
 def memory_search_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[List[Union[str, float]]]:
     query = _to_str(args[0])
     top_k = 5
@@ -61,6 +61,6 @@ def memory_del_cmd(args: List[Union[bytes, str]], context: CommandContext) -> in
     return 1 if deleted else 0
 
 
-@command("MEMORY.COUNT", min_args=0, max_args=0, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Get total count of semantic memory vector entries")
+@command("MEMORY.COUNT", min_args=0, max_args=0, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Get total count of semantic memory vector entries")
 def memory_count_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     return semantic_memory.count()

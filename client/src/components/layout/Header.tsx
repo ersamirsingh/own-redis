@@ -19,9 +19,7 @@ function RoleBadge({ role }: { role?: Role }) {
 
   const styles: Record<Role, string> = {
     admin: "bg-purple-500/15 text-purple-400 border-purple-500/30",
-    operator: "bg-blue-500/15 text-blue-400 border-blue-500/30",
     developer: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
-    readonly: "bg-amber-500/15 text-amber-400 border-amber-500/30",
   };
 
   return (

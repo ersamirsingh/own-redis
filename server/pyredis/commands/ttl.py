@@ -69,7 +69,7 @@ def pexpireat_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int
     return 1
 
 
-@command("TTL", min_args=1, max_args=1, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Get the time to live for a key in seconds")
+@command("TTL", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Get the time to live for a key in seconds")
 def ttl_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     key = _to_str(args[0])
     ttl_sec = context.store.get_ttl(key)
@@ -80,7 +80,7 @@ def ttl_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     return int(ttl_sec)
 
 
-@command("PTTL", min_args=1, max_args=1, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Get the time to live for a key in milliseconds")
+@command("PTTL", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Get the time to live for a key in milliseconds")
 def pttl_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     key = _to_str(args[0])
     ttl_sec = context.store.get_ttl(key)

@@ -39,7 +39,7 @@ export function KeyEditor({
   onKeyDeleted,
 }: KeyEditorProps) {
   const { user } = useAuth();
-  const canEdit = user?.role === "admin" || user?.role === "operator" || user?.role === "developer";
+  const canEdit = user?.role === "admin" || user?.role === "developer";
 
   const [activeTab, setActiveTab] = useState<"value" | "ttl" | "history">("value");
   const [loading, setLoading] = useState(false);

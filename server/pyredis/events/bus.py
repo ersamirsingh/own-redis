@@ -4,7 +4,7 @@ import asyncio
 import inspect
 import logging
 from collections import defaultdict
-from typing import Any, Callable, Coroutine, Dict, List, Set, Union
+from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, Union
 from pyredis.events.types import Event, EventType
 
 logger = logging.getLogger("pyredis.events")

@@ -29,7 +29,7 @@ import { ApiKeyItem, AuditLogItem, Role, User } from "@/lib/types";
 export default function SettingsPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
-  const isOperator = user?.role === "admin" || user?.role === "operator";
+  const isOperator = user?.role === "admin";
 
   const [activeTab, setActiveTab] = useState<
     "team" | "apikeys" | "eviction" | "persistence" | "ai" | "audit"
@@ -279,9 +279,7 @@ export default function SettingsPage() {
   const renderRoleBadge = (role: string) => {
     const styles: Record<string, string> = {
       admin: "bg-purple-500/10 text-purple-400 border-purple-500/30",
-      operator: "bg-blue-500/10 text-blue-400 border-blue-500/30",
       developer: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-      readonly: "bg-amber-500/10 text-amber-400 border-amber-500/30",
     };
     return (
       <span
@@ -405,7 +403,7 @@ export default function SettingsPage() {
                 Team Members & Roles
               </h2>
               <p className="text-xs text-neutral-400 mt-0.5">
-                Hierarchical RBAC: Admin &gt; Operator &gt; Developer &gt; ReadOnly
+                Hierarchical RBAC: Admin &gt; Developer
               </p>
             </div>
             {isAdmin && (
@@ -453,9 +451,7 @@ export default function SettingsPage() {
                           className="px-2 py-1 bg-neutral-900 border border-neutral-700 rounded text-xs text-neutral-200 focus:outline-none focus:border-red-500 font-mono disabled:opacity-50"
                         >
                           <option value="admin">admin</option>
-                          <option value="operator">operator</option>
                           <option value="developer">developer</option>
-                          <option value="readonly">readonly</option>
                         </select>
                       </td>
                     </tr>
@@ -538,8 +534,6 @@ export default function SettingsPage() {
                     className="px-3 py-1.5 bg-neutral-900 border border-neutral-800 rounded-lg text-xs text-white"
                   >
                     <option value="developer">developer</option>
-                    <option value="operator">operator</option>
-                    <option value="readonly">readonly</option>
                     {isAdmin && <option value="admin">admin</option>}
                   </select>
                   <select

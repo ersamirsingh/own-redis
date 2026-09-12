@@ -29,7 +29,7 @@ type SortOrder = "asc" | "desc";
 
 export default function DataConsolePage() {
   const { user } = useAuth();
-  const canWrite = user?.role === "admin" || user?.role === "operator" || user?.role === "developer";
+  const canWrite = user?.role === "admin" || user?.role === "developer";
 
   // Search & Filter States
   const [pattern, setPattern] = useState("*");

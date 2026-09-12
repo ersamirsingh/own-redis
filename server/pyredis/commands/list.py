@@ -100,7 +100,7 @@ def rpop_cmd(args: List[Union[bytes, str]], context: CommandContext) -> Any:
     return result
 
 
-@command("LRANGE", min_args=3, max_args=3, role=Role.READONLY, complexity="O(S+N)", is_mutation=False, description="Get a range of elements from a list")
+@command("LRANGE", min_args=3, max_args=3, role=Role.DEVELOPER, complexity="O(S+N)", is_mutation=False, description="Get a range of elements from a list")
 def lrange_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[bytes]:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.LIST)
@@ -130,7 +130,7 @@ def lrange_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[b
     return as_list[start : stop + 1]
 
 
-@command("LLEN", min_args=1, max_args=1, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Get the length of a list")
+@command("LLEN", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Get the length of a list")
 def llen_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.LIST)

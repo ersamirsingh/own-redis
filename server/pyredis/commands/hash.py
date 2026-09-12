@@ -34,7 +34,7 @@ def hset_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     return created
 
 
-@command("HGET", min_args=2, max_args=2, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Get the value of a hash field")
+@command("HGET", min_args=2, max_args=2, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Get the value of a hash field")
 def hget_cmd(args: List[Union[bytes, str]], context: CommandContext) -> Optional[bytes]:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.HASH)
@@ -66,7 +66,7 @@ def hdel_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     return deleted
 
 
-@command("HGETALL", min_args=1, max_args=1, role=Role.READONLY, complexity="O(N)", is_mutation=False, description="Get all the fields and values in a hash")
+@command("HGETALL", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(N)", is_mutation=False, description="Get all the fields and values in a hash")
 def hgetall_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[bytes]:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.HASH)
@@ -81,7 +81,7 @@ def hgetall_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[
     return result
 
 
-@command("HEXISTS", min_args=2, max_args=2, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Determine if a hash field exists")
+@command("HEXISTS", min_args=2, max_args=2, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Determine if a hash field exists")
 def hexists_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.HASH)
@@ -93,7 +93,7 @@ def hexists_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     return 1 if f in hmap else 0
 
 
-@command("HLEN", min_args=1, max_args=1, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Get the number of fields in a hash")
+@command("HLEN", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Get the number of fields in a hash")
 def hlen_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.HASH)
@@ -102,7 +102,7 @@ def hlen_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     return len(obj.value)
 
 
-@command("HKEYS", min_args=1, max_args=1, role=Role.READONLY, complexity="O(N)", is_mutation=False, description="Get all the fields in a hash")
+@command("HKEYS", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(N)", is_mutation=False, description="Get all the fields in a hash")
 def hkeys_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[bytes]:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.HASH)
@@ -111,7 +111,7 @@ def hkeys_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[by
     return list(obj.value.keys())
 
 
-@command("HVALS", min_args=1, max_args=1, role=Role.READONLY, complexity="O(N)", is_mutation=False, description="Get all the values in a hash")
+@command("HVALS", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(N)", is_mutation=False, description="Get all the values in a hash")
 def hvals_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[bytes]:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.HASH)

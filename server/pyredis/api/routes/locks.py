@@ -27,9 +27,9 @@ async def list_locks(
 @router.post("/force-release")
 async def force_release_lock(
     data: LockReleaseRequest,
-    current_user: Annotated[UserResponse, Depends(require_role(Role.OPERATOR))],
+    current_user: Annotated[UserResponse, Depends(require_role(Role.ADMIN))],
 ) -> Dict[str, Any]:
-    """Administratively release an active lock (requires Operator+ role)."""
+    """Administratively release an active lock (requires Admin role)."""
     released = lock_manager.force_release(data.key)
     if not released:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Lock not found or already released")

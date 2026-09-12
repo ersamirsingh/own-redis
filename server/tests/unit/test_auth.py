@@ -54,14 +54,31 @@ class TestSecurity:
 
 
 class TestUserRepository:
-    def test_first_user_is_admin(self) -> None:
+    def test_user_creation_defaults_to_developer(self) -> None:
         repo = UserRepository()
-        u1 = repo.create_user(UserCreate(email="first@example.com", name="Admin", password="pwd123password"))
-        assert u1.role == Role.ADMIN
+        u1 = repo.create_user(UserCreate(email="first@example.com", name="User1", password="pwd123password"))
+        assert u1.role == Role.DEVELOPER
 
-        # Second user defaults to DEVELOPER
-        u2 = repo.create_user(UserCreate(email="second@example.com", name="Dev", password="pwd123password"))
-        assert u2.role == Role.DEVELOPER
+        # Admin created via force_role
+        admin = repo.create_user(UserCreate(email="admin@example.com", name="Admin", password="pwd123password"), force_role=Role.ADMIN)
+        assert admin.role == Role.ADMIN
+
+    def test_admin_can_promote_and_demote_user(self) -> None:
+        repo = UserRepository()
+        user = repo.create_user(UserCreate(email="dev@example.com", name="Dev", password="pwd123password"))
+        assert user.role == Role.DEVELOPER
+
+        # Admin promotes user to ADMIN
+        promoted = repo.update_role(user.id, Role.ADMIN)
+        assert promoted is not None
+        assert promoted.role == Role.ADMIN
+        assert repo.get_by_id(user.id).role == Role.ADMIN
+
+        # Admin demotes user back to DEVELOPER
+        demoted = repo.update_role(user.id, Role.DEVELOPER)
+        assert demoted is not None
+        assert demoted.role == Role.DEVELOPER
+        assert repo.get_by_id(user.id).role == Role.DEVELOPER
 
     def test_duplicate_email_rejected(self) -> None:
         repo = UserRepository()

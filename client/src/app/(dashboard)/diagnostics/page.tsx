@@ -41,8 +41,8 @@ interface ChatMessage {
 
 export default function DiagnosticsPage() {
   const { user } = useAuth();
-  const canExecuteAction = user?.role === "admin" || user?.role === "operator";
-  const canWriteMemory = user?.role === "admin" || user?.role === "operator" || user?.role === "developer";
+  const canExecuteAction = user?.role === "admin";
+  const canWriteMemory = user?.role === "admin" || user?.role === "developer";
 
   const [activeTab, setActiveTab] = useState<"audit" | "chat" | "memory">("audit");
 

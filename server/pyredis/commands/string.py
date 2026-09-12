@@ -59,7 +59,7 @@ def set_cmd(args: List[Union[bytes, str]], context: CommandContext) -> Optional[
     return SimpleString("OK")
 
 
-@command("GET", min_args=1, max_args=1, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Get the value of a key")
+@command("GET", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Get the value of a key")
 def get_cmd(args: List[Union[bytes, str]], context: CommandContext) -> Optional[bytes]:
     key = _to_str(args[0])
     obj = context.store.ensure_type(key, DataType.STRING)
@@ -128,7 +128,7 @@ def append_cmd(args: List[Union[bytes, str]], context: CommandContext) -> int:
     return len(new_val)
 
 
-@command("MGET", min_args=1, max_args=None, role=Role.READONLY, complexity="O(N)", is_mutation=False, description="Get the values of all the given keys")
+@command("MGET", min_args=1, max_args=None, role=Role.DEVELOPER, complexity="O(N)", is_mutation=False, description="Get the values of all the given keys")
 def mget_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[Optional[bytes]]:
     result: List[Optional[bytes]] = []
     for arg in args:

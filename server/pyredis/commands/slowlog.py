@@ -9,7 +9,7 @@ from pyredis.metrics.collector import metrics_collector
 from pyredis.protocol.types import SimpleString
 
 
-@command("SLOWLOG", min_args=1, max_args=2, role=Role.READONLY, complexity="O(N)", is_mutation=False, description="Inspect the slow query log")
+@command("SLOWLOG", min_args=1, max_args=2, role=Role.DEVELOPER, complexity="O(N)", is_mutation=False, description="Inspect the slow query log")
 def slowlog_cmd(args: List[Union[bytes, str]], context: CommandContext) -> Any:
     collector = context.metrics if context.metrics is not None else metrics_collector
     subcommand = _to_str(args[0]).upper()

@@ -7,7 +7,7 @@ from pyredis.core.types import Role
 from pyredis.features.history import history_manager
 
 
-@command("HISTORY", min_args=1, max_args=1, role=Role.READONLY, complexity="O(K)", is_mutation=False, description="View version history and revisions for key: HISTORY key")
+@command("HISTORY", min_args=1, max_args=1, role=Role.DEVELOPER, complexity="O(K)", is_mutation=False, description="View version history and revisions for key: HISTORY key")
 def history_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[List[Union[str, int]]]:
     key = _to_str(args[0])
     revisions = history_manager.get_history(key)
@@ -23,7 +23,7 @@ def history_cmd(args: List[Union[bytes, str]], context: CommandContext) -> List[
     return result
 
 
-@command("GET.VERSION", min_args=2, max_args=2, role=Role.READONLY, complexity="O(1)", is_mutation=False, description="Retrieve snapshot of key at specific historical version: GET.VERSION key version")
+@command("GET.VERSION", min_args=2, max_args=2, role=Role.DEVELOPER, complexity="O(1)", is_mutation=False, description="Retrieve snapshot of key at specific historical version: GET.VERSION key version")
 def get_version_cmd(args: List[Union[bytes, str]], context: CommandContext) -> Optional[str]:
     key = _to_str(args[0])
     try:

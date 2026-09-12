@@ -22,8 +22,8 @@ import { DistributedLockItem } from "@/lib/types";
 
 export default function DistributedLocksPage() {
   const { user } = useAuth();
-  const canForceRelease = user?.role === "admin" || user?.role === "operator";
-  const canAcquire = user?.role === "admin" || user?.role === "operator" || user?.role === "developer";
+  const canForceRelease = user?.role === "admin";
+  const canAcquire = user?.role === "admin" || user?.role === "developer";
 
   const [locks, setLocks] = useState<DistributedLockItem[]>([]);
   const [loading, setLoading] = useState(true);

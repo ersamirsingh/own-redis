@@ -16,7 +16,9 @@ from pyredis.api.routes import (
 from pyredis.api.routes.keys import set_storage_reference
 from pyredis.api.routes.telemetry import set_telemetry_references
 from pyredis.api.websocket import ws_manager
+from pyredis.auth.repository import user_repo
 from pyredis.core.config import settings
+from pyredis.db.session import init_db
 from pyredis.eviction.policy import EvictionManager
 from pyredis.expiration.manager import ExpirationManager
 from pyredis.metrics import metrics_collector
@@ -43,7 +45,9 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-        # Startup
+        # Startup: Control Plane DB & Engines
+        await init_db()
+        await user_repo.load_from_db()
         active_exp.start_worker()
         active_aof.start_background_fsync()
         ws_manager.setup_event_bridge()

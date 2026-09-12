@@ -12,7 +12,7 @@ def test_version() -> None:
 def test_core_types() -> None:
     assert DataType.STRING == "string"
     assert Role.ADMIN == "admin"
-    assert Role.READONLY == "readonly"
+    assert Role.DEVELOPER == "developer"
     assert FsyncPolicy.EVERYSEC == "everysec"
     assert EvictionPolicy.ADAPTIVE == "adaptive"
 

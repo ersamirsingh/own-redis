@@ -124,9 +124,9 @@ async def get_persistence_status(
 
 @router.post("/persistence/snapshot")
 async def trigger_snapshot(
-    current_user: Annotated[UserResponse, Depends(require_role(Role.OPERATOR))]
+    current_user: Annotated[UserResponse, Depends(require_role(Role.ADMIN))]
 ) -> Dict[str, Any]:
-    """Trigger manual background snapshot (requires Operator+ role)."""
+    """Trigger manual background snapshot (requires Admin role)."""
     if not _snap_ref:
         raise HTTPException(status_code=500, detail="Snapshot engine not configured")
     store = get_store()
@@ -167,9 +167,9 @@ async def get_eviction_status(
 @router.patch("/eviction/policy")
 async def update_eviction_policy(
     data: EvictionPolicyUpdate,
-    current_user: Annotated[UserResponse, Depends(require_role(Role.OPERATOR))],
+    current_user: Annotated[UserResponse, Depends(require_role(Role.ADMIN))],
 ) -> Dict[str, Any]:
-    """Change memory eviction policy or tune adaptive weights (requires Operator+ role)."""
+    """Change memory eviction policy or tune adaptive weights (requires Admin role)."""
     if not _evict_ref:
         raise HTTPException(status_code=500, detail="Eviction manager not configured")
 
@@ -195,13 +195,13 @@ async def update_eviction_policy(
 
 @router.get("/audit-log")
 async def list_audit_log(
-    current_user: Annotated[UserResponse, Depends(require_role(Role.OPERATOR))],
+    current_user: Annotated[UserResponse, Depends(require_role(Role.ADMIN))],
     limit: int = Query(50, ge=1, le=200),
     action: Optional[str] = None,
     actor: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
-    """Query administrative and security audit trail (requires Operator+ role)."""
-    return audit_logger.list_entries(limit=limit, action=action, actor=actor)
+    """Query administrative and security audit trail (requires Admin role)."""
+    return await audit_logger.list_entries_async(limit=limit, action=action, actor=actor)
 
 
 @router.get("/users")
@@ -218,8 +218,8 @@ async def update_user_role(
     data: UserRoleUpdate,
     current_user: Annotated[UserResponse, Depends(require_role(Role.ADMIN))],
 ) -> UserResponse:
-    """Promote or demote a user's role (requires Admin role)."""
-    updated = user_repo.update_role(user_id, data.role)
+    """Promote or demote a user's role (requires Admin role). Any Admin can make another user Admin or Developer."""
+    updated = await user_repo.update_role_async(user_id, data.role)
     if not updated:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -230,6 +230,7 @@ async def update_user_role(
         action="USER_ROLE_UPDATED",
         target=user_id,
         outcome="SUCCESS",
-        details={"new_role": data.role.value},
+        details={"new_role": data.role.value, "updated_by": current_user.email},
     )
     return updated
+

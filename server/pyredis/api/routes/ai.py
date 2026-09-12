@@ -103,9 +103,9 @@ async def chat_assistant(
 @router.post("/actions/execute")
 async def execute_proposed_action(
     data: ActionExecuteRequest,
-    current_user: Annotated[UserResponse, Depends(require_role(Role.OPERATOR))],
+    current_user: Annotated[UserResponse, Depends(require_role(Role.ADMIN))],
 ) -> Dict[str, Any]:
-    """Execute an approved AI-proposed diagnostic action (requires Operator+ role)."""
+    """Execute an approved AI-proposed diagnostic action (requires Admin role)."""
     action = diagnostics_engine.get_proposed_action(data.action_id)
     if not action:
         raise HTTPException(
