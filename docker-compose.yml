@@ -3,27 +3,27 @@ version: '3.8'
 services:
   pyredis-engine:
     build:
-      context: ./pyredis
+      context: ./server
       dockerfile: Dockerfile
     container_name: pyredis-engine
     ports:
       - "6379:6379"
       - "8000:8000"
     env_file:
-      - ./pyredis/.env
+      - ./server/.env
     volumes:
       - pyredis-data:/app/data
     restart: unless-stopped
 
   pyredis-dashboard:
     build:
-      context: ./dashboard
+      context: ./client
       dockerfile: Dockerfile
     container_name: pyredis-dashboard
     ports:
       - "3000:3000"
     env_file:
-      - ./dashboard/.env
+      - ./client/.env
     depends_on:
       - pyredis-engine
     restart: unless-stopped

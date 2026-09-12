@@ -4,7 +4,7 @@ PyRedis is a production-oriented in-memory data platform built from scratch in P
 
 ## Architecture
 
-* **Backend Engine (`pyredis/`)**:
+* **Backend Engine (`server/`)**:
   - Pure Python RESP2 protocol parser & encoder (zero external Redis dependency).
   - High-concurrency `asyncio` TCP server (default port 6379).
   - In-memory data structures: String, List, Set, Hash, Sorted Set (SkipList), JSON documents.
@@ -16,7 +16,7 @@ PyRedis is a production-oriented in-memory data platform built from scratch in P
   - Distributed tracing with waterfall spans and latency percentiles.
   - Google Gemini AI integration: Semantic memory, vector embeddings, and grounded autonomous DBA diagnostics.
 
-* **Frontend Dashboard (`dashboard/`)**:
+* **Frontend Dashboard (`client/`)**:
   - Next.js 15 App Router + TypeScript + Tailwind CSS.
   - Operational Data Console with type-aware editors (String, List, Set, Hash, Sorted Set, JSON).
   - Monaco-based in-browser Command Console with history and autocomplete.
@@ -28,7 +28,7 @@ PyRedis is a production-oriented in-memory data platform built from scratch in P
 
 ### 1. Backend Setup
 ```bash
-cd pyredis
+cd server
 python -m venv .venv
 # On Windows:
 .venv\Scripts\activate
@@ -41,7 +41,7 @@ python -m pyredis.main
 
 ### 2. Frontend Setup
 ```bash
-cd dashboard
+cd client
 npm install
 npm run dev
 ```
