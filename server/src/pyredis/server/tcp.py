@@ -23,6 +23,8 @@ class TcpServer:
         port: int = 6379,
         store: Optional[DataStore] = None,
         command_registry: Optional[CommandRegistry] = None,
+        aof: Optional[Any] = None,
+        snapshot: Optional[Any] = None,
     ) -> None:
         self.host: str = host
         self.port: int = port
@@ -30,6 +32,8 @@ class TcpServer:
         self.registry: CommandRegistry = (
             command_registry if command_registry is not None else default_registry
         )
+        self.aof = aof
+        self.snapshot = snapshot
         self._server: Optional[asyncio.Server] = None
         self._clients: Dict[str, ClientConnection] = {}
         self._running: bool = False
@@ -127,12 +131,20 @@ class TcpServer:
                         role=client.role,
                         client_id=client.id,
                         authenticated=client.authenticated,
+                        aof=self.aof,
+                        snapshot=self.snapshot,
                     )
 
                     # Execute command
                     try:
                         result = self.registry.execute(raw_cmd, raw_args, context)
                         response_bytes = RespEncoder.encode(result)
+
+                        # If command succeeded and is mutating, append to AOF
+                        if self.aof:
+                            cmd_def = self.registry.get_definition(raw_cmd)
+                            if cmd_def and cmd_def.is_mutation:
+                                self.aof.append(raw_cmd, raw_args)
                     except PyRedisException as err:
                         response_bytes = RespEncoder.encode(err)
                     except Exception as err:

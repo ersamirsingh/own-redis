@@ -23,6 +23,8 @@ class CommandContext:
     client_id: Optional[str] = None
     authenticated: bool = True
     session_user: Optional[str] = None
+    aof: Optional[Any] = None
+    snapshot: Optional[Any] = None
 
 
 @dataclass
