@@ -71,3 +71,31 @@ export interface CommandExecutionResult {
   timestamp: number;
   error?: string;
 }
+
+export interface SpanItem {
+  name: string;
+  start_time: number;
+  duration_ms: number;
+  metadata?: Record<string, any>;
+}
+
+export interface TraceItem {
+  trace_id: string;
+  command: string;
+  client_id?: string | null;
+  client_ip?: string | null;
+  start_time: number;
+  duration_ms: number;
+  status: "OK" | "ERROR" | string;
+  error_message?: string | null;
+  sanitized_args: string[];
+  spans: SpanItem[];
+}
+
+export interface DistributedLockItem {
+  key: string;
+  owner: string;
+  acquired_at: number;
+  expires_at: number;
+  ttl_remaining_ms: number;
+}
