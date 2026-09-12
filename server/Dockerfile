@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY pyproject.toml README.md ./
 RUN pip install --no-cache-dir hatchling && pip install --no-cache-dir .
 
-COPY src/ ./src/
+COPY pyredis/ ./pyredis/
 RUN pip install --no-cache-dir -e .
 
 RUN mkdir -p /app/data
