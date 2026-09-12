@@ -162,6 +162,13 @@ class UserRepository:
             return True
         return False
 
+    def clear(self) -> None:
+        """Reset repository state (useful for testing)."""
+        self._users_by_id.clear()
+        self._users_by_email.clear()
+        self._api_keys_by_key.clear()
+        self._api_keys_by_id.clear()
+
 
 # Global User repository singleton
 user_repo = UserRepository()

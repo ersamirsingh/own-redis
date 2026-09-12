@@ -9,12 +9,15 @@ from pyredis.api.routes import (
     commands_router,
     keys_router,
     telemetry_router,
+    websocket_router,
 )
 from pyredis.api.routes.keys import set_storage_reference
 from pyredis.api.routes.telemetry import set_telemetry_references
+from pyredis.api.websocket import ws_manager
 from pyredis.core.config import settings
 from pyredis.eviction.policy import EvictionManager
 from pyredis.expiration.manager import ExpirationManager
+from pyredis.metrics import metrics_collector
 from pyredis.persistence.aof import AofEngine
 from pyredis.persistence.snapshot import SnapshotEngine
 from pyredis.storage.store import DataStore
@@ -34,14 +37,25 @@ def create_app(
 
     set_storage_reference(active_store, active_evict)
     set_telemetry_references(active_exp, active_evict, active_aof, active_snap)
+    ws_manager.setup_event_bridge()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         # Startup
         active_exp.start_worker()
         active_aof.start_background_fsync()
+        ws_manager.setup_event_bridge()
+
+        def _get_stats():
+            summary = metrics_collector.get_summary()
+            summary["memory_used_bytes"] = active_store.memory_usage()
+            summary["total_keys"] = active_store.dbsize()
+            return summary
+
+        ws_manager.start_heartbeat(_get_stats, interval_seconds=1.0)
         yield
         # Shutdown
+        await ws_manager.stop_heartbeat()
         await active_exp.stop_worker()
         await active_aof.stop_background_fsync()
 
@@ -66,6 +80,7 @@ def create_app(
     app.include_router(keys_router, prefix="/api")
     app.include_router(commands_router, prefix="/api")
     app.include_router(telemetry_router, prefix="/api")
+    app.include_router(websocket_router)
 
     return app
 
