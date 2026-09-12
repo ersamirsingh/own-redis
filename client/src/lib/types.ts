@@ -99,3 +99,59 @@ export interface DistributedLockItem {
   expires_at: number;
   ttl_remaining_ms: number;
 }
+
+export interface DiagnosticFinding {
+  id: string;
+  severity: "CRITICAL" | "WARNING" | "INFO";
+  category: string;
+  title: string;
+  description: string;
+  recommendation: string;
+}
+
+export interface ProposedAction {
+  action_id: string;
+  title: string;
+  description: string;
+  command: string;
+  risk_level: "LOW" | "MEDIUM" | "HIGH";
+}
+
+export interface DiagnosticsReport {
+  health_score: number;
+  status: "HEALTHY" | "DEGRADED" | "CRITICAL";
+  findings: DiagnosticFinding[];
+  proposed_actions: ProposedAction[];
+  telemetry_snapshot: Record<string, any>;
+  timestamp: number;
+}
+
+export interface SemanticMemoryItem {
+  id: string;
+  text: string;
+  metadata?: Record<string, any>;
+  created_at?: number;
+  score?: number;
+}
+
+export interface ApiKeyItem {
+  id: string;
+  name: string;
+  key?: string;
+  prefix: string;
+  role: Role;
+  created_at: number;
+  expires_at?: number | null;
+}
+
+export interface AuditLogItem {
+  id: string;
+  timestamp: number;
+  actor_id: string;
+  actor_email: string;
+  actor_role: string;
+  action: string;
+  target?: string | null;
+  outcome: string;
+  details?: Record<string, any>;
+}
