@@ -36,6 +36,12 @@ class DataStore:
         self._data[key] = obj
         self._total_bytes += obj.estimated_bytes
 
+        try:
+            from pyredis.features.history import history_manager
+            history_manager.record_revision(key, obj.data_type, obj.value)
+        except Exception:
+            pass
+
         if expire_at is not None:
             self._ttl[key] = expire_at
         elif key in self._ttl:

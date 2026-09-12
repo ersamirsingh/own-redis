@@ -103,3 +103,7 @@ def create_hash(mapping: Optional[Dict[str, str | bytes]] = None) -> PyRedisObje
 def create_zset() -> PyRedisObject:
     # (member -> score dict, SkipList)
     return PyRedisObject(DataType.ZSET, ({}, SkipList()))
+
+
+def create_json(val: Any) -> PyRedisObject:
+    return PyRedisObject(DataType.JSON, val)

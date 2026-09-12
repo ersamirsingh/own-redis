@@ -18,6 +18,10 @@ import pyredis.commands.zset  # noqa: F401
 import pyredis.commands.ttl  # noqa: F401
 import pyredis.commands.persistence  # noqa: F401
 import pyredis.commands.slowlog  # noqa: F401
+import pyredis.commands.lock  # noqa: F401
+import pyredis.commands.ratelimit  # noqa: F401
+import pyredis.commands.json_doc  # noqa: F401
+import pyredis.commands.history  # noqa: F401
 
 __all__ = [
     "registry",

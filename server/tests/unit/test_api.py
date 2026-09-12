@@ -8,6 +8,13 @@ from pyredis.core.types import Role
 from pyredis.storage.store import DataStore
 
 
+@pytest.fixture(autouse=True)
+def clean_repo():
+    user_repo.clear()
+    yield
+    user_repo.clear()
+
+
 @pytest.fixture
 def app():
     # Fresh store for API tests

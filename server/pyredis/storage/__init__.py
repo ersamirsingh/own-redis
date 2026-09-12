@@ -3,6 +3,7 @@
 from pyredis.storage.object import (
     PyRedisObject,
     create_hash,
+    create_json,
     create_list,
     create_set,
     create_string,
@@ -21,4 +22,5 @@ __all__ = [
     "create_set",
     "create_hash",
     "create_zset",
+    "create_json",
 ]

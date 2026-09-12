@@ -8,6 +8,7 @@ from pyredis.api.routes import (
     auth_router,
     commands_router,
     keys_router,
+    locks_router,
     telemetry_router,
     websocket_router,
 )
@@ -78,6 +79,7 @@ def create_app(
     # Mount API routers
     app.include_router(auth_router, prefix="/api")
     app.include_router(keys_router, prefix="/api")
+    app.include_router(locks_router, prefix="/api")
     app.include_router(commands_router, prefix="/api")
     app.include_router(telemetry_router, prefix="/api")
     app.include_router(websocket_router)

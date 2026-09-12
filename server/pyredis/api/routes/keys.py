@@ -1,6 +1,7 @@
 """Operational Data Console Key Explorer and Editor routes."""
 
 import fnmatch
+import json
 from typing import Annotated, Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
@@ -9,9 +10,11 @@ from pyredis.auth.audit import audit_logger
 from pyredis.auth.models import UserResponse
 from pyredis.core.types import DataType, Role
 from pyredis.eviction.policy import EvictionManager
+from pyredis.features.history import history_manager
 from pyredis.storage import (
     DataStore,
     create_hash,
+    create_json,
     create_list,
     create_set,
     create_string,
@@ -145,6 +148,8 @@ async def get_key(
     elif obj.data_type == DataType.ZSET:
         score_map, _ = obj.value
         val = [{"member": m, "score": s} for m, s in score_map.items()]
+    elif obj.data_type == DataType.JSON:
+        val = obj.value
     else:
         val = str(obj.value)
 
@@ -212,6 +217,16 @@ async def create_or_update_key(
         z_obj.update_size()
         store.set(data.key, z_obj, expire_at=now_exp)
 
+    elif data.type == DataType.JSON:
+        if isinstance(data.value, str):
+            try:
+                parsed_json = json.loads(data.value)
+            except Exception:
+                parsed_json = data.value
+        else:
+            parsed_json = data.value
+        store.set(data.key, create_json(parsed_json), expire_at=now_exp)
+
     audit_logger.log(
         actor_id=current_user.id,
         actor_email=current_user.email,
@@ -244,3 +259,12 @@ async def delete_key(
         target=key,
         outcome="SUCCESS",
     )
+
+
+@router.get("/{key}/history")
+async def get_key_history(
+    key: str,
+    current_user: Annotated[UserResponse, Depends(get_current_user)],
+) -> List[Dict[str, Any]]:
+    """Retrieve version history and previous snapshots of a key."""
+    return history_manager.get_history(key)
