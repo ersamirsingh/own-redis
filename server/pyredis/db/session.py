@@ -22,13 +22,14 @@ _session_factory: Optional[async_sessionmaker[AsyncSession]] = None
 def get_database_url() -> str:
     """Resolve database URL with asyncpg/aiosqlite driver prefix."""
     raw_url = settings.DATABASE_URL or os.getenv("DATABASE_URL")
-    if raw_url:
+    if raw_url and raw_url.strip():
+        clean_url = raw_url.strip()
         # Normalize postgres URLs to asyncpg
-        if raw_url.startswith("postgresql://"):
-            return raw_url.replace("postgresql://", "postgresql+asyncpg://", 1)
-        if raw_url.startswith("postgres://"):
-            return raw_url.replace("postgres://", "postgresql+asyncpg://", 1)
-        return raw_url
+        if clean_url.startswith("postgresql://"):
+            return clean_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        if clean_url.startswith("postgres://"):
+            return clean_url.replace("postgres://", "postgresql+asyncpg://", 1)
+        return clean_url
 
     # Fallback to local SQLite for tests and offline standalone mode
     data_dir = Path("./data")

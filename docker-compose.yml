@@ -30,6 +30,7 @@ services:
     env_file:
       - ./server/.env
     volumes:
+      - ./server/pyredis:/app/pyredis
       - pyredis-data:/app/data
     depends_on:
       pyredis-postgres:

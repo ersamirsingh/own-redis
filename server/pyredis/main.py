@@ -49,6 +49,15 @@ async def main_async() -> None:
 
     aof.open()
 
+    # Initialize SQLite/PostgreSQL control plane and hydrate user cache
+    try:
+        from pyredis.db.session import init_db
+        from pyredis.auth.repository import user_repo
+        await init_db()
+        await user_repo.load_from_db()
+    except Exception as e:
+        logger.warning(f"Could not initialize or hydrate database: {e}")
+
     tcp_server = TcpServer(
         host=settings.HOST,
         port=settings.PORT,
@@ -82,8 +91,17 @@ async def main_async() -> None:
 
 def main() -> None:
     """CLI entry point."""
-    asyncio.run(main_async())
+    try:
+        asyncio.run(main_async())
+    except KeyboardInterrupt:
+        logger.info("PyRedis shutdown requested by user.")
+        sys.exit(0)
+
+
+# Exported alias for scripts importing run
+run = main_async
 
 
 if __name__ == "__main__":
     main()
+
